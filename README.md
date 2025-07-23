@@ -207,6 +207,200 @@ For any inquiries, please reach out to [your-email@example.com](mailto:your-emai
 - `pnpm lint` - Lint all files
 - `pnpm format` - Format all files with Prettier
 
+## 🔧 Git Commands & Repository Management
+
+### 📥 Cloning the Repository
+
+```bash
+# Clone the repository to your local machine
+git clone https://github.com/hariseldon84/x52.git
+cd x52
+```
+
+### 🔄 Basic Git Workflow
+
+#### Initial Setup (First Time)
+```bash
+# Configure your Git identity
+git config --global user.name "Your Name"
+git config --global user.email "your-email@example.com"
+
+# For GitHub privacy, use no-reply email:
+git config --global user.email "yourusername@users.noreply.github.com"
+
+# Set up credential helper (Windows)
+git config --global credential.helper manager-core
+```
+
+#### Daily Development Workflow
+```bash
+# 1. Pull latest changes from remote
+git pull origin main
+
+# 2. Create a new branch for your feature
+git checkout -b feature/your-feature-name
+
+# 3. Make your changes and stage them
+git add .
+# Or stage specific files:
+git add path/to/specific/file.ts
+
+# 4. Commit your changes
+git commit -m "feat: add your feature description"
+
+# 5. Push your branch to remote
+git push -u origin feature/your-feature-name
+
+# 6. Create a Pull Request on GitHub
+# Visit: https://github.com/hariseldon84/x52/pulls
+```
+
+### 🚀 Pushing to Main Branch (Maintainers Only)
+
+```bash
+# Switch to main branch
+git checkout main
+
+# Pull latest changes
+git pull origin main
+
+# Merge your feature branch (if working locally)
+git merge feature/your-feature-name
+
+# Push to main
+git push origin main
+```
+
+### 🔍 Useful Git Commands
+
+```bash
+# Check repository status
+git status
+
+# View commit history
+git log --oneline
+
+# View changes in files
+git diff
+
+# View remote repositories
+git remote -v
+
+# Switch branches
+git checkout branch-name
+
+# Create and switch to new branch
+git checkout -b new-branch-name
+
+# Delete a branch locally
+git branch -d branch-name
+
+# Delete a branch on remote
+git push origin --delete branch-name
+
+# Undo last commit (keep changes)
+git reset --soft HEAD~1
+
+# Undo last commit (discard changes)
+git reset --hard HEAD~1
+
+# Stash changes temporarily
+git stash
+git stash pop
+```
+
+### 🔐 Authentication Setup
+
+#### Option 1: Personal Access Token (HTTPS)
+1. Go to GitHub Settings → Developer settings → Personal access tokens
+2. Generate new token with `repo` scope
+3. Use token as password when prompted
+
+#### Option 2: SSH Keys (Recommended)
+```bash
+# Generate SSH key
+ssh-keygen -t ed25519 -C "your-email@example.com"
+
+# Add to SSH agent
+ssh-add ~/.ssh/id_ed25519
+
+# Copy public key to clipboard
+cat ~/.ssh/id_ed25519.pub
+
+# Add to GitHub: Settings → SSH and GPG keys → New SSH key
+
+# Update remote URL to use SSH
+git remote set-url origin git@github.com:hariseldon84/x52.git
+```
+
+### 🛠 Troubleshooting
+
+#### Common Issues and Solutions
+
+**Authentication Failed:**
+```bash
+# Use Personal Access Token instead of password
+# Or set up SSH authentication (see above)
+```
+
+**Email Privacy Error:**
+```bash
+# Use GitHub no-reply email
+git config --global user.email "yourusername@users.noreply.github.com"
+git commit --amend --reset-author --no-edit
+git push --force-with-lease
+```
+
+**Merge Conflicts:**
+```bash
+# Pull latest changes
+git pull origin main
+
+# Resolve conflicts in your editor
+# Then stage and commit
+git add .
+git commit -m "resolve: merge conflicts"
+```
+
+**Reset to Remote State:**
+```bash
+# Discard all local changes and match remote
+git fetch origin
+git reset --hard origin/main
+```
+
+### 📋 Commit Message Conventions
+
+Use conventional commits for better project history:
+
+```bash
+# Feature additions
+git commit -m "feat: add user authentication system"
+
+# Bug fixes
+git commit -m "fix: resolve login validation issue"
+
+# Documentation
+git commit -m "docs: update README with Git commands"
+
+# Refactoring
+git commit -m "refactor: optimize database queries"
+
+# Tests
+git commit -m "test: add unit tests for auth service"
+
+# Build/CI
+git commit -m "build: update dependencies"
+```
+
+### 🔗 Repository URLs
+
+- **HTTPS:** `https://github.com/hariseldon84/x52.git`
+- **SSH:** `git@github.com:hariseldon84/x52.git`
+- **GitHub:** https://github.com/hariseldon84/x52
+
+---
+
 ## 📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
