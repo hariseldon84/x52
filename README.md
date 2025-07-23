@@ -1,27 +1,148 @@
-# X52
+# 🚀 X52 - Gamified Productivity Platform
 
-X52 is a gamified productivity platform that combines task management with game mechanics to make productivity fun and engaging.
+X52 is an innovative productivity platform that transforms task management into an engaging, game-like experience. By combining powerful project management tools with gamification mechanics, X52 helps users stay motivated, track progress, and achieve their goals through an intuitive and rewarding interface.
 
-## 📊 Project Status
+## ✨ Key Features
 
-### 🎯 Current Focus
-- Implementing Epic 2: Gamified Task Management System
-- Setting up database schema for tasks, projects, and goals
+### 🎮 Gamification Layer
+- **XP (Experience Points) System**: Earn XP for completing tasks and achieving goals
+- **Level Progression**: Level up as you accumulate XP, unlocking new features and rewards
+- **Streaks & Milestones**: Build and maintain daily streaks for consistent productivity
+- **Achievements & Badges**: Earn recognition for completing challenges and reaching milestones
+- **Leaderboards**: Compete with friends or colleagues in productivity challenges
 
-### ✅ Completed
-- **Epic 1: Core Authentication & User Management**
-  - User registration with email/password
-  - Email verification
-  - Password reset functionality
-  - Session management and security
-  - Protected routes
+### 📋 Task Management
+- **Hierarchical Organization**: Organize work into Goals > Projects > Tasks
+- **Smart Task Creation**: Quick add, detailed task creation, and bulk operations
+- **Due Dates & Reminders**: Never miss a deadline with smart notifications
+- **Priority & Labels**: Categorize and prioritize work effectively
+- **Subtasks & Checklists**: Break down complex tasks into manageable steps
 
-### 🚧 In Progress
-- **Epic 2: Gamified Task Management System**
-  - Database schema design
-  - API endpoints for task management
-  - UI components for task creation/management
-  - XP reward system
+### 🎯 Goal Setting & Tracking
+- **Goal Creation**: Define clear objectives with target dates and XP rewards
+- **Progress Visualization**: Track goal completion with intuitive progress bars and metrics
+- **Project Association**: Link multiple projects to each goal for better organization
+- **Status Management**: Mark goals as active, completed, or on hold
+
+### 📊 Analytics & Insights
+- **Productivity Analytics**: Visualize your productivity trends over time
+- **XP History**: Track your XP earnings and level progression
+- **Task Completion Rates**: Monitor your completion rates and identify patterns
+- **Time Tracking**: (Future) Track time spent on tasks and projects
+
+## 🏗️ System Architecture
+
+### Frontend
+- **Framework**: React with TypeScript
+- **UI Library**: Radix UI components with custom styling
+- **State Management**: React Query for server state, Context API for global state
+- **Form Handling**: React Hook Form with Zod validation
+- **Routing**: React Router for seamless navigation
+
+### Backend
+- **Authentication**: Supabase Auth with email/password and social providers
+- **Database**: PostgreSQL with Row Level Security (RLS)
+- **API**: RESTful API built with Node.js and Express
+- **Real-time Updates**: Supabase Realtime for live data synchronization
+
+## 📋 Epics & Stories
+
+| Epic | Status | Points | Progress |
+|------|--------|--------|----------|
+| **1. Core Authentication & User Management** | 🟢 Completed | 34 | 100% |
+| **2. Gamified Task Management System** | 🟡 In Progress | 42 | 65% |
+| **3. Social & Collaboration** | 🟣 Planned | 28 | 0% |
+| **4. Mobile Application** | 🟣 Planned | 45 | 0% |
+| **5. Advanced Analytics** | 🟣 Planned | 22 | 0% |
+| **6. Integration & API** | 🟣 Planned | 18 | 0% |
+| **7. Notifications System** | 🟣 Planned | 15 | 0% |
+| **8. Admin Dashboard** | 🟣 Planned | 20 | 0% |
+| **9. Internationalization** | 🟣 Planned | 12 | 0% |
+| **10. Marketing Website** | 🟣 Planned | 10 | 0% |
+
+## 🚀 Implementation Status
+
+### 🔐 Authentication & User Management (100% Complete)
+- [x] User registration with email/password
+- [x] Email verification flow
+- [x] Password reset functionality
+- [x] Protected routes and session management
+- [x] Basic user profile management
+
+### 🎯 Gamified Task Management (65% Complete)
+#### Goals Module
+- [x] Goal creation and listing
+- [x] Goal status management (active/completed/paused)
+- [x] XP tracking and progress visualization
+- [ ] Goal sharing and collaboration
+
+#### Projects Module
+- [x] Project creation and management
+- [x] Project status tracking
+- [x] Task count and completion percentage
+- [x] Project movement between goals
+- [ ] Project templates
+
+#### Tasks Module
+- [x] Basic task CRUD operations
+- [x] Task prioritization
+- [ ] Task dependencies
+- [ ] Recurring tasks
+- [ ] Bulk task operations
+
+### 🎮 Gamification Layer (40% Complete)
+- [x] XP calculation and tracking
+- [x] Basic level progression
+- [x] Streak tracking
+- [ ] Achievement system
+- [ ] Leaderboards
+- [ ] Customizable rewards
+
+## 🛠️ Getting Started
+
+### Prerequisites
+- Node.js 18+
+- pnpm 8.9.0+
+- PostgreSQL 14+
+- Supabase account
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/hariseldon84/x52.git
+   cd x52
+   ```
+
+2. Install dependencies:
+   ```bash
+   pnpm install
+   ```
+
+3. Set up environment variables:
+   ```bash
+   cp .env.example .env
+   # Update the environment variables in .env
+   ```
+
+4. Start the development server:
+   ```bash
+   pnpm dev
+   ```
+
+## 📄 License
+
+Copyright (C) 2024 Anand Arora. All rights reserved.
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🤝 Contributing
+
+Contributions are welcome! Please read our [contributing guidelines](CONTRIBUTING.md) to get started.
+
+## 📧 Contact
+
+For any inquiries, please reach out to [your-email@example.com](mailto:your-email@example.com).
 
 ### 📅 Upcoming
 - Social Authentication (Google/GitHub)
