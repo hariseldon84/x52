@@ -1,0 +1,3 @@
+@dev.md  Let us look at the epic and stories and biuld a Dev tracker file known as powercodertasks.md in root folder. Add all the tasks related to all modules that needs to be developed. It can be various epics. Create a comprehensive table that lists out these tables where you list down all stories one by one , and share status of Frontend Development, Backend Development, Integrations Status, QA/QC status, CI/CD Status, Deployment Status in it. Also create an integrations.md file in core folder to list down all integrations required.
+
+Check the entire codebase and confirm the Epic1 status completion. Then move on to development for Epic 2 stories. Update everything in powercodertasks.md whenever you develop anything.
