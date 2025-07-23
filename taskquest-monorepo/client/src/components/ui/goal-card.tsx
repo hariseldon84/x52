@@ -5,11 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Target, Calendar, Zap, MoreVertical, Play, Pause, CheckCircle2 } from "lucide-react";
+import { Target, Calendar, Zap, MoreVertical, Play, Pause, CheckCircle2, Pencil, Trash2 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { format } from "date-fns";
+import EditGoalDialog from "./edit-goal-dialog";
+import DeleteGoalDialog from "./delete-goal-dialog";
 
 interface GoalCardProps {
   goal: {
@@ -93,14 +95,48 @@ export default function GoalCard({ goal }: GoalCardProps) {
 
   const StatusIcon = statusIcons[goal.status];
 
+  const handleDeleteSuccess = () => {
+    // Invalidate queries to refresh the goals list
+    queryClient.invalidateQueries({ queryKey: ["/api/goals"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
+  };
+
   return (
-    <Card className="github-secondary border-github-border hover:border-blue-500/30 transition-colors">
+    <Card className="github-secondary border-github-border hover:border-blue-500/30 transition-colors group">
       <CardContent className="p-4">
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <h3 className="font-medium text-primary">{goal.name}</h3>
+              <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                <EditGoalDialog goal={goal}>
+                  <Button variant="ghost" size="icon" className="h-6 w-6">
+                    <Pencil className="h-3 w-3 text-muted-foreground hover:text-primary" />
+                  </Button>
+                </EditGoalDialog>
+                <DeleteGoalDialog goalId={goal.id} goalName={goal.name} onSuccess={handleDeleteSuccess}>
+                  <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:text-destructive">
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </DeleteGoalDialog>
+              </div>
+            </div>
             <div className="flex items-center space-x-2 mb-2">
-              <Target className="w-4 h-4 text-blue-400" />
+              <Target className="w-4 h-4 text-blue-400 flex-shrink-0" />
               <h3 className="font-medium text-primary truncate">{goal.name}</h3>
+              <Badge 
+                variant="outline" 
+                className={`text-xs ${priorityColors[goal.priority]}`}
+              >
+                {goal.priority.charAt(0).toUpperCase() + goal.priority.slice(1)}
+              </Badge>
+              <Badge 
+                variant="outline" 
+                className={`text-xs ${statusColors[goal.status]}`}
+              >
+                <StatusIcon className="w-3 h-3 mr-1" />
+                {goal.status.charAt(0).toUpperCase() + goal.status.slice(1)}
+              </Badge>
             </div>
             {goal.description && (
               <p className="text-sm text-secondary mb-3 line-clamp-2">{goal.description}</p>
@@ -150,18 +186,33 @@ export default function GoalCard({ goal }: GoalCardProps) {
 
         {/* Progress */}
         <div className="mb-3">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center space-x-2">
-              <Zap className="w-3 h-3 text-orange-400" />
-              <span className="text-xs text-secondary">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs text-secondary">
+              <span>XP Progress</span>
+              <span className="flex items-center">
+                <Zap className="w-3 h-3 text-yellow-400 mr-1" />
                 {goal.currentXP} / {goal.targetXP} XP
+                <span className="ml-1">({Math.round(progressPercentage)}%)</span>
               </span>
             </div>
-            <span className="text-xs text-secondary">
-              {Math.round(progressPercentage)}%
-            </span>
+            <div className="relative">
+              <div className="relative h-3 w-full overflow-hidden rounded-full bg-gray-700/50">
+                <div 
+                  className="h-full bg-gradient-to-r from-blue-500 to-blue-400 transition-all duration-300 ease-in-out"
+                  style={{ width: `${progressPercentage}%` }}
+                />
+              </div>
+              <div className="absolute inset-0 flex items-center px-2 text-[10px] font-medium text-white">
+                {progressPercentage > 30 ? (
+                  <span className="text-white/90">
+                    {progressPercentage < 100 ? 
+                      `${Math.round(goal.targetXP - goal.currentXP)} XP to go!` : 
+                      'Goal completed! 🎉'}
+                  </span>
+                ) : null}
+              </div>
+            </div>
           </div>
-          <Progress value={progressPercentage} className="h-2" />
         </div>
 
         {/* Badges */}
