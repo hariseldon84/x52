@@ -2,7 +2,7 @@ import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, Target, Award, Flame } from 'lucide-react';
 import Link from 'next/link';
 
 export default async function DashboardPage() {
@@ -27,6 +27,19 @@ export default async function DashboardPage() {
     .order('due_date', { ascending: true })
     .limit(5);
 
+  // Get user's total XP
+  const { data: totalXP } = await supabase
+    .rpc('get_user_total_xp', { user_id: session.user.id });
+
+  // Get user's current streak
+  const { data: streak } = await supabase
+    .from('user_streaks')
+    .select('current_streak, longest_streak, last_activity_date')
+    .eq('user_id', session.user.id)
+    .single();
+
+  const activeGoals = goals?.filter(g => !g.completed).length || 0;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -50,9 +63,9 @@ export default async function DashboardPage() {
             <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{goals?.length || 0}</div>
+            <div className="text-2xl font-bold">{activeGoals}</div>
             <p className="text-xs text-muted-foreground">
-              {goals?.length === 0 ? 'No active goals' : `${goals?.filter(g => !g.completed).length} in progress`}
+              {activeGoals === 0 ? 'No active goals' : `${activeGoals} in progress`}
             </p>
           </CardContent>
         </Card>
@@ -63,9 +76,9 @@ export default async function DashboardPage() {
             <Award className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1,234</div>
+            <div className="text-2xl font-bold">{totalXP || 0}</div>
             <p className="text-xs text-muted-foreground">
-              +12% from last month
+              Total XP earned
             </p>
           </CardContent>
         </Card>
@@ -76,9 +89,11 @@ export default async function DashboardPage() {
             <Flame className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">7 days</div>
+            <div className="text-2xl font-bold">
+              {streak?.current_streak || 0} days
+            </div>
             <p className="text-xs text-muted-foreground">
-              Keep it up! 🔥
+              {streak?.current_streak ? 'Keep it up! 🔥' : 'Complete a task to start!'}
             </p>
           </CardContent>
         </Card>

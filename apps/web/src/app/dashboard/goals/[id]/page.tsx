@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { TaskList } from '@/components/task-list';
 import { format } from 'date-fns';
 import { Plus, Pencil, Trash2, Check, ChevronDown, ChevronUp } from 'lucide-react';
 import Link from 'next/link';
@@ -27,11 +28,20 @@ export default async function GoalPage({ params }: { params: { id: string } }) {
     return notFound();
   }
 
-  // Fetch tasks for this goal
+  // Fetch projects for this goal
+  const { data: projects } = await supabase
+    .from('projects')
+    .select('*')
+    .eq('goal_id', params.id)
+    .eq('user_id', session.user.id);
+
+  // Fetch tasks for all projects under this goal
+  const projectIds = projects?.map(p => p.id) || [];
   const { data: tasks } = await supabase
     .from('tasks')
     .select('*')
-    .eq('goal_id', params.id)
+    .in('project_id', projectIds)
+    .eq('user_id', session.user.id)
     .order('due_date', { ascending: true });
 
   // Calculate progress
@@ -139,57 +149,7 @@ export default async function GoalPage({ params }: { params: { id: string } }) {
         </Button>
       </div>
 
-      {tasks && tasks.length > 0 ? (
-        <div className="space-y-2">
-          {tasks.map((task) => (
-            <Card key={task.id} className={task.completed ? 'opacity-70' : ''}>
-              <CardContent className="p-4">
-                <div className="flex items-start">
-                  <div className="flex items-center h-5">
-                    <input
-                      type="checkbox"
-                      className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                      checked={task.completed}
-                      readOnly
-                    />
-                  </div>
-                  <div className="ml-3 flex-1">
-                    <div className="flex justify-between">
-                      <h3 className={`text-sm font-medium ${task.completed ? 'line-through text-muted-foreground' : ''}`}>
-                        {task.title}
-                      </h3>
-                      <div className="flex items-center space-x-2">
-                        <span className="text-xs text-muted-foreground">
-                          {format(new Date(task.due_date), 'MMM d')}
-                        </span>
-                        <Button variant="ghost" size="icon" className="h-6 w-6">
-                          <Pencil className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                    {task.description && (
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {task.description}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <Card>
-          <CardContent className="py-8 text-center">
-            <p className="text-muted-foreground mb-4">No tasks yet for this goal</p>
-            <Button asChild>
-              <Link href={`/dashboard/goals/${goal.id}/tasks/new`}>
-                <Plus className="mr-2 h-4 w-4" /> Add your first task
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+      <TaskList tasks={tasks || []} />
     </div>
   );
 }

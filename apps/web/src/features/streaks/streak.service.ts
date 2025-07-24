@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@/utils/supabase/server';
 import { Database } from '@/types/supabase';
 
 type StreakData = Database['public']['Tables']['user_streaks']['Row'];

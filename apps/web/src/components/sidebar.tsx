@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Home, Target, CheckSquare, BarChart, Settings, Trophy } from 'lucide-react';
+import { Home, Target, CheckSquare, BarChart, Settings, Trophy, Users } from 'lucide-react';
 
 export function Sidebar() {
   return (
@@ -19,6 +19,9 @@ export function Sidebar() {
               </NavItem>
               <NavItem href="/dashboard/tasks" icon={<CheckSquare className="h-5 w-5" />}>
                 Tasks
+              </NavItem>
+              <NavItem href="/dashboard/contacts" icon={<Users className="h-5 w-5" />}>
+                Contacts
               </NavItem>
               <NavItem href="/dashboard/achievements" icon={<Trophy className="h-5 w-5" />}>
                 Achievements

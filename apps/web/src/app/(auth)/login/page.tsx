@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
-import { Button } from '@taskquest/ui';
+import { createClient } from '@/utils/supabase/client';
+import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
 export default function LoginPage() {

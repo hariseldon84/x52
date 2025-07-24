@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@/utils/supabase/server';
 import { Database } from '@/types/supabase';
 
 type XPEvent = Database['public']['Tables']['xp_events']['Insert'];
