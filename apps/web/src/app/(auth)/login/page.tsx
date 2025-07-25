@@ -44,27 +44,73 @@ export default function LoginPage() {
       }
       
       if (data?.user) {
-        // Success - redirect to dashboard or intended URL
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          // Check if user needs to complete profile
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('onboarded')
-            .eq('id', user.id)
-            .single();
-
-          if (profileError || !profile?.onboarded) {
-            router.push('/onboarding');
-          } else {
-            router.push('/dashboard');
-          }
-          router.refresh();
-        }
+        // Success - redirect to dashboard
+        router.push('/dashboard');
+        router.refresh();
       }
     } catch (error: any) {
       setError(error.message || 'An error occurred during login. Please try again.');
       console.error('Login error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDemoLogin = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: 'demo@x52app.com',
+        password: 'demo123456',
+      });
+
+      if (error) {
+        throw error;
+      }
+      
+      if (data?.user) {
+        router.push('/dashboard');
+        router.refresh();
+      }
+    } catch (error: any) {
+      setError('Demo login failed. Creating demo user...');
+      
+      // Try to create demo user if login fails
+      try {
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email: 'demo@x52app.com',
+          password: 'demo123456',
+          options: {
+            data: {
+              full_name: 'Demo User',
+            },
+          },
+        });
+
+        if (signUpError) {
+          throw signUpError;
+        }
+
+        // Try to sign in again after creating the user
+        const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
+          email: 'demo@x52app.com',
+          password: 'demo123456',
+        });
+
+        if (loginError) {
+          throw loginError;
+        }
+
+        if (loginData?.user) {
+          router.push('/dashboard');
+          router.refresh();
+        }
+      } catch (createError: any) {
+        setError('Failed to create demo user. Please try regular login.');
+        console.error('Demo user creation error:', createError);
+      }
     } finally {
       setLoading(false);
     }
@@ -194,6 +240,24 @@ export default function LoginPage() {
                 Signing in...
               </>
             ) : 'Sign in'}
+          </Button>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 text-gray-500 bg-white">Or try demo</span>
+            </div>
+          </div>
+
+          <Button
+            type="button"
+            onClick={handleDemoLogin}
+            className="flex justify-center w-full px-4 py-2.5 text-sm font-medium text-white bg-green-600 border border-transparent rounded-lg shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200"
+            disabled={loading}
+          >
+            {loading ? 'Signing in...' : '🚀 Try Demo (demo@x52app.com)'}
           </Button>
           
           <div className="relative">
