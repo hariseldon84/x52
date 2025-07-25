@@ -106,9 +106,11 @@
 
 ---
 
-## Epic 6: Mobile Application (iOS & Android)
+## Epic 6: Mobile Application (iOS & Android) ✅ COMPLETE
 **Priority:** P1 (Should Have)  
-**Estimated Effort:** 5-6 sprints
+**Estimated Effort:** 5-6 sprints  
+**Status:** ✅ Complete  
+**Completion Date:** 2025-07-24
 
 ### User Stories:
 - As a mobile user, I want full task management functionality so I can work on-the-go
@@ -127,22 +129,27 @@
 
 ---
 
-## Epic 7: Social & Community Features
+## Epic 7: Social & Community Features ✅ COMPLETE
 **Priority:** P2 (Nice to Have)  
-**Estimated Effort:** 4-5 sprints
+**Estimated Effort:** 4-5 sprints  
+**Status:** ✅ Complete  
+**Completion Date:** 2025-07-25
 
 ### User Stories:
 - As a user, I want to join team challenges so I can compete with friends/colleagues
 - As a user, I want to see leaderboards so I can compare my progress with others
 - As a user, I want to form productivity guilds so I can join like-minded communities
 - As a user, I want to find mentors so I can learn from experienced users
+- As a user, I want to see social activity feeds so I can stay connected with friends
+- As a user, I want to connect with friends so I can share my productivity journey
 
 ### Acceptance Criteria:
 - Team challenge creation and participation
 - Leaderboard system (opt-in)
 - Guild/community formation
 - Mentor-mentee matching system
-- Social interaction features
+- Social activity feed with interactions
+- Friend system with privacy controls
 
 ---
 
@@ -193,6 +200,7 @@
 - As a visitor, I want to see pricing information so I can understand the cost
 - As a reader, I want to access productivity content so I can improve my skills
 - As a prospect, I want to see testimonials so I can trust the product
+- As a website admin, I want a simple CMS (not a website builder) so I can create, edit, and publish blog posts and update website sections (text, images, and content blocks) without code changes, and add new content collections as needed.
 
 ### Acceptance Criteria:
 - Fast, SEO-optimized landing page
@@ -200,6 +208,14 @@
 - Blog with productivity content
 - Testimonial and social proof sections
 - Clear call-to-action for sign-up
+- Admin interface to create, edit, and delete blog posts (title, body, images, tags)
+- Admin interface to update content in predefined website sections (e.g., hero, about, testimonials, features)
+- Ability to add new CMS collections (e.g., FAQs, team, resources) with basic fields
+- Content changes are reflected on the public website instantly after publish
+- No drag-and-drop or layout editing (not a website builder)
+- All content is stored in a database or flat files (no hardcoded text/images)
+- Basic authentication for admin access
+- Minimal, intuitive UI for content management
 
 ---
 

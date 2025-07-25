@@ -157,6 +157,31 @@ As a TaskQuest team member, I want to execute a successful product launch so tha
 
 ---
 
+## Story 10.7: Basic CMS for Website Content & Blog Management
+**Story Points:** 8  
+**Priority:** High
+
+### User Story
+As a website admin, I want a simple CMS (not a website builder) so I can create, edit, and publish blog posts and update website sections (text, images, and content blocks) without code changes, and add new content collections as needed.
+
+### Acceptance Criteria
+- [ ] Admin interface to create, edit, and delete blog posts (title, body, images, tags)
+- [ ] Admin interface to update content in predefined website sections (e.g., hero, about, testimonials, features)
+- [ ] Ability to add new CMS collections (e.g., FAQs, team, resources) with basic fields
+- [ ] Content changes are reflected on the public website instantly after publish
+- [ ] No drag-and-drop or layout editing (not a website builder)
+- [ ] All content is stored in a database or flat files (no hardcoded text/images)
+- [ ] Basic authentication for admin access
+- [ ] Minimal, intuitive UI for content management
+
+### Technical Notes
+- Use a simple headless CMS approach (e.g., custom Next.js API routes, flat file storage, or lightweight DB)
+- Hardcode website structure/sections, but make content editable via CMS
+- Allow dynamic creation of new collections with basic field types (text, image, rich text)
+- No WYSIWYG or advanced layout tools
+
+---
+
 ## Definition of Done
 - [ ] All acceptance criteria met
 - [ ] Code reviewed and approved

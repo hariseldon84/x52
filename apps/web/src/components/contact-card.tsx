@@ -6,8 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar } from '@/components/ui/avatar';
-import { Trash2, Edit2, Mail, Phone, Building, User, Calendar, MessageSquare } from 'lucide-react';
+import { Trash2, Edit2, Mail, Phone, Building, User, Calendar, MessageSquare, Eye } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
+import { useRouter } from 'next/navigation';
 
 type Contact = Database['public']['Tables']['contacts']['Row'];
 
@@ -34,6 +35,7 @@ const priorityLabels = {
 
 export function ContactCard({ contact, onEdit, onDelete, className = '' }: ContactCardProps) {
   const [isDeleting, setIsDeleting] = useState(false);
+  const router = useRouter();
 
   const handleDelete = async () => {
     if (!confirm(`Are you sure you want to delete ${contact.name}? This action cannot be undone.`)) {
@@ -98,6 +100,15 @@ export function ContactCard({ contact, onEdit, onDelete, className = '' }: Conta
               {priorityLabels[contact.priority]}
             </Badge>
             <div className="flex space-x-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => router.push(`/dashboard/contacts/${contact.id}`)}
+                className="h-8 w-8 p-0"
+                title="View contact details and tasks"
+              >
+                <Eye className="h-4 w-4" />
+              </Button>
               <Button
                 variant="ghost"
                 size="sm"

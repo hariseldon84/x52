@@ -4,6 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Plus, Target, Award, Flame } from 'lucide-react';
 import Link from 'next/link';
+import { UpcomingAchievements } from '@/components/upcoming-achievements';
+import { ProgressSuggestions } from '@/components/progress-suggestions';
 
 export default async function DashboardPage() {
   const supabase = createClient();
@@ -99,7 +101,10 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      {/* Upcoming Achievements Section */}
+      <UpcomingAchievements limit={4} />
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader>
             <CardTitle>Recent Goals</CardTitle>
@@ -167,6 +172,9 @@ export default async function DashboardPage() {
             )}
           </CardContent>
         </Card>
+
+        {/* Progress Suggestions */}
+        <ProgressSuggestions limit={4} />
       </div>
     </div>
   );

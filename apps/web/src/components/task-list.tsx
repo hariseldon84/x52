@@ -6,20 +6,26 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { format } from 'date-fns';
-import { Clock, Star, Edit, Trash2 } from 'lucide-react';
+import { Clock, Star, Edit, Trash2, Users } from 'lucide-react';
 import { Database } from '@/types/supabase';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
 
 type Task = Database['public']['Tables']['tasks']['Row'];
+type Contact = Database['public']['Tables']['contacts']['Row'];
+
+export interface TaskWithContact extends Task {
+  contact?: Contact | null;
+}
 
 interface TaskListProps {
-  tasks: Task[];
+  tasks: TaskWithContact[];
   showProject?: boolean;
+  showContact?: boolean;
   onTaskUpdate?: () => void;
 }
 
-export function TaskList({ tasks, showProject = false, onTaskUpdate }: TaskListProps) {
+export function TaskList({ tasks, showProject = false, showContact = false, onTaskUpdate }: TaskListProps) {
   const [updatingTasks, setUpdatingTasks] = useState<Set<string>>(new Set());
   const router = useRouter();
   const supabase = createClient();
@@ -181,6 +187,16 @@ export function TaskList({ tasks, showProject = false, onTaskUpdate }: TaskListP
                   <Badge variant="outline" className={statusColors[task.status]}>
                     {task.status.replace('_', ' ')}
                   </Badge>
+
+                  {showContact && task.contact && (
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Users className="h-3 w-3" />
+                      <span>{task.contact.name}</span>
+                      {task.contact.company && (
+                        <span className="text-gray-400">@ {task.contact.company}</span>
+                      )}
+                    </div>
+                  )}
 
                   {task.due_date && (
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
