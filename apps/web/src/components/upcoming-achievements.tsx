@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Database } from '@/types/supabase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,7 +9,7 @@ import { Progress } from '@/components/ui/progress';
 import { 
   Trophy, Target, Star, Zap, ArrowRight, Plus, CheckSquare,
   Users, Calendar, MessageSquare, Flame, Eye, Award,
-  TrendingUp, Clock, AlertCircle, Lightbulb
+  TrendingUp, AlertCircle, Lightbulb
 } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
@@ -53,7 +53,7 @@ const categoryColors = {
 };
 
 // Generate action suggestions based on achievement criteria
-const generateActionSuggestions = (achievement: Achievement, progress: AchievementProgress): string[] => {
+const generateActionSuggestions = (achievement: Achievement): string[] => {
   const suggestions: string[] = [];
   
   // Extract criteria from achievement title and category for suggestions
@@ -135,7 +135,7 @@ export function UpcomingAchievements({
 
   const supabase = createClient();
 
-  const loadUpcomingAchievements = async () => {
+  const loadUpcomingAchievements = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
@@ -145,16 +145,16 @@ export function UpcomingAchievements({
 
       // Load achievements with progress but not yet unlocked
       const { data: achievementsData, error: achievementsError } = await supabase
-        .from('achievements')
+        .from('achievement_progress')
         .select(`
           *,
-          achievement_progress!inner(*)
+          achievements!inner(*)
         `)
-        .eq('is_active', true)
-        .eq('achievement_progress.user_id', user.id)
-        .gt('achievement_progress.progress_percentage', 0)
-        .is('achievement_progress.completed_at', null)
-        .order('achievement_progress.progress_percentage', { ascending: false })
+        .eq('achievements.is_active', true)
+        .eq('user_id', user.id)
+        .gt('progress_percentage', 0)
+        .is('completed_at', null)
+        .order('progress_percentage', { ascending: false })
         .limit(limit);
 
       if (achievementsError) throw achievementsError;
@@ -171,34 +171,43 @@ export function UpcomingAchievements({
 
       // Filter out already unlocked achievements and add suggestions
       const upcoming: UpcomingAchievement[] = achievementsData
-        .filter(achievement => !unlockedIds.has(achievement.id))
-        .map(achievement => {
-          const progress = Array.isArray(achievement.achievement_progress) 
-            ? achievement.achievement_progress[0] 
-            : achievement.achievement_progress;
+        .filter(progressData => !unlockedIds.has(progressData.achievements.id))
+        .map(progressData => {
+          const achievement = Array.isArray(progressData.achievements) 
+            ? progressData.achievements[0] 
+            : progressData.achievements;
+          const progress = {
+            id: progressData.id,
+            user_id: progressData.user_id,
+            achievement_id: progressData.achievement_id,
+            current_progress: progressData.current_progress,
+            progress_percentage: progressData.progress_percentage,
+            last_updated: progressData.last_updated,
+            completed_at: progressData.completed_at
+          };
             
           return {
             ...achievement,
             progress,
-            progress_percentage: progress.progress_percentage,
-            suggested_actions: generateActionSuggestions(achievement, progress),
+            progress_percentage: progressData.progress_percentage,
+            suggested_actions: generateActionSuggestions(achievement),
           };
         })
         .slice(0, limit);
 
       setUpcomingAchievements(upcoming);
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error loading upcoming achievements:', err);
-      setError(err.message || 'Failed to load upcoming achievements');
+      setError(err instanceof Error ? err.message : 'Failed to load upcoming achievements');
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [limit, supabase]);
 
   useEffect(() => {
     loadUpcomingAchievements();
-  }, [limit]);
+  }, [limit, loadUpcomingAchievements]);
 
   if (isLoading) {
     return (
@@ -263,7 +272,7 @@ export function UpcomingAchievements({
             <Trophy className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="font-medium text-gray-900 mb-2">Great job!</h3>
             <p className="text-gray-600 text-sm mb-4">
-              You don't have any achievements in progress right now.
+              You don&apos;t have any achievements in progress right now.
             </p>
             <Button asChild variant="outline" size="sm">
               <Link href="/dashboard/achievements">
@@ -294,7 +303,7 @@ export function UpcomingAchievements({
             </Button>
           </div>
           <p className="text-sm text-gray-600">
-            You're close to unlocking these achievements
+            You&apos;re close to unlocking these achievements
           </p>
         </CardHeader>
       )}

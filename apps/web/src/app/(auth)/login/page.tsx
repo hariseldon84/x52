@@ -60,60 +60,58 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
 
+    // Create a unique demo user each time to avoid email confirmation issues
+    const timestamp = Date.now();
+    const demoEmail = `demo${timestamp}@x52demo.local`;
+    
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: 'demo@x52app.com',
+      setError('Creating demo account...');
+      
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email: demoEmail,
         password: 'demo123456',
+        options: {
+          data: {
+            full_name: 'Demo User',
+          },
+        },
       });
 
-      if (error) {
-        throw error;
+      if (signUpError) {
+        // If signup fails, try to set form values for manual entry
+        setEmail('test@example.com');
+        setPassword('test123456');
+        setError('Click "Sign up" to create a new account, or try Google login above.');
+        setLoading(false);
+        return;
       }
-      
-      if (data?.user) {
-        router.push('/dashboard');
-        router.refresh();
-      }
-    } catch (error: any) {
-      setError('Demo login failed. Creating demo user...');
-      
-      // Try to create demo user if login fails
-      try {
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-          email: 'demo@x52app.com',
-          password: 'demo123456',
-          options: {
-            data: {
-              full_name: 'Demo User',
-            },
-          },
-        });
 
-        if (signUpError) {
-          throw signUpError;
-        }
-
-        // Try to sign in again after creating the user
-        const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
-          email: 'demo@x52app.com',
-          password: 'demo123456',
-        });
-
-        if (loginError) {
-          throw loginError;
-        }
-
-        if (loginData?.user) {
+      if (signUpData?.user) {
+        if (signUpData.user.email_confirmed_at) {
+          // User is confirmed, redirect to dashboard
           router.push('/dashboard');
           router.refresh();
+        } else {
+          // Show success message for unconfirmed user
+          setError(`✅ Demo account created! Email: ${demoEmail} | Password: demo123456. Go to the signup page if you want to create your own account.`);
+          setEmail(demoEmail);
+          setPassword('demo123456');
         }
-      } catch (createError: any) {
-        setError('Failed to create demo user. Please try regular login.');
-        console.error('Demo user creation error:', createError);
       }
+    } catch (error: any) {
+      console.error('Demo account creation error:', error);
+      setEmail('test@example.com');
+      setPassword('test123456');
+      setError('Demo unavailable. Use the pre-filled credentials above or try Google login.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleFillTestCredentials = () => {
+    setEmail('test@example.com');
+    setPassword('test123456');
+    setError('Credentials filled! Click "Sign in" or go to signup page to create this account.');
   };
 
   const handleGoogleLogin = async () => {
@@ -257,8 +255,15 @@ export default function LoginPage() {
             className="flex justify-center w-full px-4 py-2.5 text-sm font-medium text-white bg-green-600 border border-transparent rounded-lg shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200"
             disabled={loading}
           >
-            {loading ? 'Signing in...' : '🚀 Try Demo (demo@x52app.com)'}
+            {loading ? 'Creating demo account...' : '🚀 Create Demo Account (No Email Required)'}
           </Button>
+
+          <div className="text-center text-sm text-gray-600">
+            <p>Demo creates a temporary account to test all features</p>
+            <p className="text-xs text-gray-500 mt-1">
+              Or manually enter: <span className="font-mono">test@example.com</span> + any password to create your own account
+            </p>
+          </div>
           
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
