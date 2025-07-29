@@ -1,5 +1,8 @@
-import { createClient } from '@/utils/supabase/server';
-import { redirect } from 'next/navigation';
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { createClient } from '@/utils/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,22 +10,105 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import { Settings, User, Bell, Shield, Palette } from 'lucide-react';
+import { Settings, User, Bell, Shield, Palette, Loader2, Check } from 'lucide-react';
 
-export default async function SettingsPage() {
+export default function SettingsPage() {
+  const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  
+  // Form states
+  const [fullName, setFullName] = useState('');
+  const [bio, setBio] = useState('');
+  const [emailNotifications, setEmailNotifications] = useState(false);
+  const [pushNotifications, setPushNotifications] = useState(false);
+  const [achievementNotifications, setAchievementNotifications] = useState(true);
+  const [theme, setTheme] = useState('light');
+  
+  const router = useRouter();
   const supabase = createClient();
-  const { data: { session } } = await supabase.auth.getSession();
 
-  if (!session) {
-    redirect('/login');
+  useEffect(() => {
+    loadUserData();
+  }, []);
+
+  const loadUserData = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        router.push('/login');
+        return;
+      }
+
+      setUser(session.user);
+
+      // Get user profile
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+
+      if (profileData) {
+        setProfile(profileData);
+        setFullName(profileData.full_name || '');
+        setBio(profileData.bio || '');
+        setEmailNotifications(profileData.email_notifications || false);
+        setPushNotifications(profileData.push_notifications || false);
+        setAchievementNotifications(profileData.achievement_notifications !== false);
+        setTheme(profileData.theme || 'light');
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    if (!user) return;
+    
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .upsert({
+          id: user.id,
+          full_name: fullName,
+          bio: bio,
+          email_notifications: emailNotifications,
+          push_notifications: pushNotifications,
+          achievement_notifications: achievementNotifications,
+          theme: theme,
+          updated_at: new Date().toISOString()
+        });
+
+      if (error) throw error;
+
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+      
+      // Reload profile data
+      await loadUserData();
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      alert('Failed to save profile. Please try again.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <span className="ml-2 text-muted-foreground">Loading settings...</span>
+      </div>
+    );
   }
-
-  // Get user profile
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', session.user.id)
-    .single();
 
   return (
     <div className="space-y-6">
@@ -52,7 +138,7 @@ export default async function SettingsPage() {
                 <Input
                   id="email"
                   type="email"
-                  value={session.user.email || ''}
+                  value={user?.email || ''}
                   disabled
                   className="bg-muted"
                 />
@@ -62,7 +148,8 @@ export default async function SettingsPage() {
                 <Input
                   id="fullName"
                   placeholder="Enter your full name"
-                  defaultValue={profile?.full_name || ''}
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
                 />
               </div>
             </div>
@@ -72,9 +159,29 @@ export default async function SettingsPage() {
                 id="bio"
                 placeholder="Tell us about yourself"
                 rows={3}
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
               />
             </div>
-            <Button>Save Profile</Button>
+            <Button 
+              onClick={handleSaveProfile} 
+              disabled={saving}
+              className="flex items-center space-x-2"
+            >
+              {saving ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Saving...</span>
+                </>
+              ) : saved ? (
+                <>
+                  <Check className="h-4 w-4" />
+                  <span>Saved!</span>
+                </>
+              ) : (
+                <span>Save Profile</span>
+              )}
+            </Button>
           </CardContent>
         </Card>
 
@@ -94,7 +201,23 @@ export default async function SettingsPage() {
                   Receive email notifications for important updates
                 </p>
               </div>
-              <Switch />
+              <Switch 
+                checked={emailNotifications}
+                onCheckedChange={setEmailNotifications}
+              />
+            </div>
+            <Separator />
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Push Notifications</Label>
+                <p className="text-sm text-muted-foreground">
+                  Receive push notifications on your device
+                </p>
+              </div>
+              <Switch 
+                checked={pushNotifications}
+                onCheckedChange={setPushNotifications}
+              />
             </div>
             <Separator />
             <div className="flex items-center justify-between">
@@ -104,17 +227,10 @@ export default async function SettingsPage() {
                   Get notified when you unlock new achievements
                 </p>
               </div>
-              <Switch defaultChecked />
-            </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Daily Reminders</Label>
-                <p className="text-sm text-muted-foreground">
-                  Receive daily reminders for pending tasks
-                </p>
-              </div>
-              <Switch defaultChecked />
+              <Switch 
+                checked={achievementNotifications}
+                onCheckedChange={setAchievementNotifications}
+              />
             </div>
           </CardContent>
         </Card>
@@ -172,20 +288,28 @@ export default async function SettingsPage() {
             <div className="space-y-2">
               <Label>Theme</Label>
               <div className="flex space-x-4">
-                <Button variant="outline" size="sm">Light</Button>
-                <Button variant="outline" size="sm">Dark</Button>
-                <Button variant="outline" size="sm">System</Button>
+                <Button 
+                  variant={theme === 'light' ? 'default' : 'outline'} 
+                  size="sm"
+                  onClick={() => setTheme('light')}
+                >
+                  Light
+                </Button>
+                <Button 
+                  variant={theme === 'dark' ? 'default' : 'outline'} 
+                  size="sm"
+                  onClick={() => setTheme('dark')}
+                >
+                  Dark
+                </Button>
+                <Button 
+                  variant={theme === 'system' ? 'default' : 'outline'} 
+                  size="sm"
+                  onClick={() => setTheme('system')}
+                >
+                  System
+                </Button>
               </div>
-            </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Compact View</Label>
-                <p className="text-sm text-muted-foreground">
-                  Use a more compact layout to fit more content
-                </p>
-              </div>
-              <Switch />
             </div>
           </CardContent>
         </Card>
