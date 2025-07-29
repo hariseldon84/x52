@@ -143,21 +143,46 @@ export function UpcomingAchievements({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      // Load achievements with progress but not yet unlocked
-      const { data: achievementsData, error: achievementsError } = await supabase
+      // First, get progress records for the user with progress > 0
+      const { data: progressData, error: progressError } = await supabase
         .from('achievement_progress')
-        .select(`
-          *,
-          achievements!inner(*)
-        `)
-        .eq('achievements.is_active', true)
+        .select('*')
         .eq('user_id', user.id)
         .gt('progress_percentage', 0)
-        .is('completed_at', null)
         .order('progress_percentage', { ascending: false })
-        .limit(limit);
+        .limit(limit * 2); // Get more to account for filtering
 
-      if (achievementsError) throw achievementsError;
+      if (progressError) {
+        console.error('Progress query error:', progressError);
+        throw new Error(`Failed to load progress data: ${progressError.message || 'Unknown database error'}`);
+      }
+
+      // Handle null/empty progress data
+      if (!progressData || progressData.length === 0) {
+        setUpcomingAchievements([]);
+        return;
+      }
+
+      // Get achievement IDs from progress data
+      const achievementIds = progressData.map(p => p.achievement_id);
+
+      // Get the achievement details
+      const { data: achievementsData, error: achievementsError } = await supabase
+        .from('achievements')
+        .select('*')
+        .in('id', achievementIds)
+        .eq('is_active', true);
+
+      if (achievementsError) {
+        console.error('Achievements query error:', achievementsError);
+        throw new Error(`Failed to load achievements: ${achievementsError.message || 'Unknown database error'}`);
+      }
+
+      // Handle null/empty achievements data
+      if (!achievementsData || achievementsData.length === 0) {
+        setUpcomingAchievements([]);
+        return;
+      }
 
       // Check which achievements are not already unlocked
       const { data: userAchievements, error: userAchievementsError } = await supabase
@@ -165,31 +190,36 @@ export function UpcomingAchievements({
         .select('achievement_id')
         .eq('user_id', user.id);
 
-      if (userAchievementsError) throw userAchievementsError;
+      if (userAchievementsError) {
+        console.error('User achievements query error:', userAchievementsError);
+        throw new Error(`Failed to load user achievements: ${userAchievementsError.message || 'Unknown database error'}`);
+      }
 
-      const unlockedIds = new Set(userAchievements.map(ua => ua.achievement_id));
+      // Handle null userAchievements data
+      const unlockedIds = new Set((userAchievements || []).map(ua => ua.achievement_id));
 
-      // Filter out already unlocked achievements and add suggestions
-      const upcoming: UpcomingAchievement[] = achievementsData
-        .filter(progressData => !unlockedIds.has(progressData.achievements.id))
-        .map(progressData => {
-          const achievement = Array.isArray(progressData.achievements) 
-            ? progressData.achievements[0] 
-            : progressData.achievements;
-          const progress = {
-            id: progressData.id,
-            user_id: progressData.user_id,
-            achievement_id: progressData.achievement_id,
-            current_progress: progressData.current_progress,
-            progress_percentage: progressData.progress_percentage,
-            last_updated: progressData.last_updated,
-            completed_at: progressData.completed_at
-          };
-            
+      // Create a map of achievements for quick lookup
+      const achievementMap = new Map(achievementsData.map(achievement => [achievement.id, achievement]));
+
+      // Combine progress and achievement data
+      const upcoming: UpcomingAchievement[] = progressData
+        .filter(progress => {
+          // Only include if achievement exists and is not unlocked
+          const achievement = achievementMap.get(progress.achievement_id);
+          return achievement && !unlockedIds.has(progress.achievement_id);
+        })
+        .map(progress => {
+          const achievement = achievementMap.get(progress.achievement_id);
+
+          // Validate achievement data
+          if (!achievement) {
+            throw new Error('Achievement data is missing');
+          }
+
           return {
             ...achievement,
             progress,
-            progress_percentage: progressData.progress_percentage,
+            progress_percentage: progress.progress_percentage,
             suggested_actions: generateActionSuggestions(achievement),
           };
         })

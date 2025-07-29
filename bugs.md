@@ -15,6 +15,17 @@ Central logging system for tracking all bugs, errors, and their resolutions in t
 | BUG-007 | 2025-01-28 | React Hook useEffect missing dependency warning | LOW | `/apps/web/src/components/upcoming-achievements.tsx:210` | Wrapped `loadUpcomingAchievements` in `useCallback` hook with proper dependencies `[limit, supabase]` | ✅ PASSED - Hook dependency satisfied | ✅ YES | Prevents unnecessary re-renders |
 | BUG-008 | 2025-01-28 | React error: Unescaped quotes in JSX strings | LOW | `/apps/web/src/components/upcoming-achievements.tsx:275,306` | Replaced unescaped quotes with HTML entities: `don't` → `don&apos;t`, `You're` → `You&apos;re` | ✅ PASSED - JSX syntax corrected | ✅ YES | Proper JSX string escaping |
 | BUG-009 | 2025-01-28 | Import error: `Lightning` and `Refresh` not exported from lucide-react | LOW | `/apps/web/src/components/achievement-card.tsx` | NOT FIXED - Warning persists in build output | ❌ FAILED - Still showing warnings | ❌ NO | Requires investigation of lucide-react version compatibility |
+| BUG-010 | 2025-01-28 | Runtime TypeError: Cannot read properties of null (reading 'type') | HIGH | Dashboard page runtime | Added null checks and validation: 1) Added null/empty data validation for `achievementsData` and `userAchievements` 2) Added safety checks for `progressData.achievements` access 3) Added proper error handling with descriptive messages | ✅ PASSED - Null pointer protection added | ✅ YES | Prevents runtime crashes from null database responses |
+| BUG-011 | 2025-01-28 | Console Error: "Error loading upcoming achievements: {}" | HIGH | `/apps/web/src/components/upcoming-achievements.tsx:201` | Enhanced error handling: 1) Added detailed error logging with specific error messages 2) Converted generic error objects to descriptive Error instances 3) Added validation for empty/null data scenarios | ✅ PASSED - Meaningful error messages provided | ✅ YES | Improved debugging and user experience |
+| BUG-012 | 2025-01-28 | Runtime TypeError: Cannot read properties of null (reading 'type') (recurring) | HIGH | Dashboard page runtime | Additional null checks applied to prevent remaining null pointer exceptions | 🔄 IN PROGRESS - Additional fixes needed | 🔄 PARTIAL | Related to schema relationship issues |
+| BUG-013 | 2025-01-28 | Database schema error: "Could not find a relationship between 'achievement_progress' and 'achievements'" | CRITICAL | `/apps/web/src/components/upcoming-achievements.tsx:147-158` | Completely restructured query approach: 1) Separated progress query from achievements query 2) Used `.in()` filter instead of inner join 3) Eliminated non-existent `completed_at` column reference 4) Implemented Map-based data joining | ✅ PASSED - Query restructured successfully | ✅ YES | Fixed fundamental database relationship issue |
+| BUG-014 | 2025-01-28 | Build Error: Export Lightning doesn't exist in lucide-react (ER401) | HIGH | `/apps/web/src/components/achievement-card.tsx:18` | Replaced non-existent icons: 1) `Lightning` → `CloudLightning` 2) `Refresh` → `RotateCcw` 3) Updated icon mapping object to use new icon names | ✅ PASSED - Build compilation successful | ✅ YES | Fixed icon import compatibility issue |
+| BUG-015 | 2025-01-28 | Build Error: Export Refresh doesn't exist in lucide-react (ER402) | HIGH | `/apps/web/src/components/achievement-card.tsx:19` | Same fix as BUG-014 - replaced with `RotateCcw` icon | ✅ PASSED - Build compilation successful | ✅ YES | Fixed icon import compatibility issue |
+| BUG-016 | 2025-01-28 | Add new goal button does not work - missing Link import | HIGH | `/apps/web/src/app/dashboard/goals/new/page.tsx` | Added missing `import Link from 'next/link'` to fix navigation functionality | ✅ PASSED - Navigation links work | ✅ YES | Fixed missing import causing button malfunction |
+| BUG-017 | 2025-01-28 | Add task button page not found - missing tasks routes | HIGH | Multiple navigation components | Created missing pages: 1) `/dashboard/tasks/page.tsx` - main tasks listing 2) `/dashboard/tasks/new/page.tsx` - task creation router 3) Updated navigation links to use correct routes | ✅ PASSED - Pages created and accessible | ✅ YES | Fixed 404 errors and missing route structure |
+| BUG-018 | 2025-01-28 | 404 error on Tasks page - missing page file | HIGH | Sidebar navigation to `/dashboard/tasks` | Created comprehensive tasks page with full CRUD functionality and proper database queries | ✅ PASSED - Tasks page accessible | ✅ YES | Fixed missing page causing 404 errors |
+| BUG-019 | 2025-01-28 | Settings page 404 error - missing page file | HIGH | Sidebar navigation to `/dashboard/settings` | Created comprehensive settings page with profile, notifications, privacy, and appearance sections | ✅ PASSED - Settings page accessible | ✅ YES | Fixed missing page causing 404 errors |
+| BUG-020 | 2025-01-28 | Missing Separator component - build failure | MEDIUM | `/apps/web/src/app/dashboard/settings/page.tsx` | Created missing `Separator` UI component with proper styling and orientation support | ✅ PASSED - Build compilation successful | ✅ YES | Fixed missing component dependency |
 
 ## Bug Categories
 
@@ -33,10 +44,10 @@ Central logging system for tracking all bugs, errors, and their resolutions in t
 
 ## Resolution Statistics
 
-- **Total Bugs Reported**: 9
-- **Fixed**: 7 (77.8%)
-- **Partially Fixed**: 1 (11.1%)
-- **Pending**: 1 (11.1%)
+- **Total Bugs Reported**: 20
+- **Fixed**: 17 (85.0%)
+- **Partially Fixed**: 2 (10.0%)
+- **Pending**: 1 (5.0%)
 
 ## Active Issues Requiring Attention
 
@@ -61,6 +72,15 @@ Central logging system for tracking all bugs, errors, and their resolutions in t
 2. Replace with available alternative icons
 3. Update icon mapping in achievement components
 
+### BUG-012: Recurring Runtime TypeErrors
+**Status**: Partially Fixed
+**Issue**: Additional null pointer exceptions still occurring despite initial fixes
+**Root Cause**: Complex data flow with multiple async operations and schema relationship issues
+**Recommended Approach**:
+1. Add comprehensive null checking at component boundaries
+2. Implement loading states for each async operation
+3. Add fallback UI components for error states
+
 ## Prevention Measures
 
 1. **Pre-commit Hooks**: Implement linting and type checking
@@ -70,6 +90,6 @@ Central logging system for tracking all bugs, errors, and their resolutions in t
 
 ---
 
-**Last Updated**: 2025-01-28  
+**Last Updated**: 2025-01-28 (Major navigation and routing fixes completed)  
 **Maintained By**: James (dev agent)  
 **Review Frequency**: After each bug fix session

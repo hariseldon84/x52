@@ -15,8 +15,8 @@ import {
   Award, Target, Crown, Flame, Zap, Medal, Gem, Diamond,
   ThumbsUp, TrendingUp, Brain, UserPlus, Users, Globe, Network,
   MessageCircle, Link, Flag, Eye, Folder, Briefcase, Sunrise,
-  Moon, CheckSquare, Package, Archive, Lightning, Cpu, BellRing,
-  Shuffle, Refresh, Layers, Share, Timer
+  Moon, CheckSquare, Package, Archive, CloudLightning, Cpu, BellRing,
+  Shuffle, RotateCcw, Layers, Share, Timer
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -55,7 +55,7 @@ const iconMap = {
   flame: Flame,
   fire: Flame,
   zap: Zap,
-  lightning: Lightning,
+  lightning: CloudLightning,
   medal: Medal,
   gem: Gem,
   diamond: Diamond,
@@ -93,7 +93,7 @@ const iconMap = {
   shuffle: Shuffle,
   layers: Layers,
   timer: Timer,
-  refresh: Refresh,
+  refresh: RotateCcw,
 };
 
 const rarityLabels = {

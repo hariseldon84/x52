@@ -1,11 +1,14 @@
-import { createClient } from '@/utils/supabase/server';
-import { redirect } from 'next/navigation';
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from '@/components/ui/calendar';
-import { CalendarIcon, ArrowLeft } from 'lucide-react';
+import { CalendarIcon, ArrowLeft, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import {
@@ -13,46 +16,62 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { createClient } from '@/utils/supabase/client';
 
 export default function NewGoalPage() {
-  async function createGoal(formData: FormData) {
-    'use server';
-    
-    const supabase = createClient();
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (!session) {
-      return { error: 'Not authenticated' };
-    }
+  const [date, setDate] = useState<Date>();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+  const supabase = createClient();
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+
+    const formData = new FormData(e.currentTarget);
     const title = formData.get('title') as string;
     const description = formData.get('description') as string;
-    const dueDate = formData.get('dueDate') as string;
-    
-    // Basic validation
-    if (!title || !dueDate) {
-      return { error: 'Title and due date are required' };
+
+    if (!title || !date) {
+      setError('Title and due date are required');
+      setIsLoading(false);
+      return;
     }
 
-    const { error } = await supabase
-      .from('goals')
-      .insert([
-        { 
-          title, 
-          description,
-          due_date: dueDate,
-          user_id: session.user.id,
-          progress: 0,
-          completed: false
-        },
-      ]);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        router.push('/login');
+        return;
+      }
 
-    if (error) {
-      return { error: error.message };
+      const { error: insertError } = await supabase
+        .from('goals')
+        .insert([
+          {
+            user_id: session.user.id,
+            title,
+            description: description || null,
+            target_date: date.toISOString(),
+            status: 'active'
+          }
+        ]);
+
+      if (insertError) {
+        throw insertError;
+      }
+
+      router.push('/dashboard/goals');
+    } catch (err: any) {
+      console.error('Error creating goal:', err);
+      setError(err.message || 'Failed to create goal');
+    } finally {
+      setIsLoading(false);
     }
-
-    redirect('/dashboard/goals');
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -70,7 +89,13 @@ export default function NewGoalPage() {
         </div>
       </div>
 
-      <form action={createGoal} className="space-y-6 max-w-2xl">
+      {error && (
+        <div className="p-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+          {error}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
         <div className="space-y-2">
           <Label htmlFor="title">Goal Title *</Label>
           <Input 
@@ -78,6 +103,7 @@ export default function NewGoalPage() {
             name="title" 
             placeholder="E.g., Learn Next.js" 
             required 
+            disabled={isLoading}
           />
           <p className="text-sm text-muted-foreground">
             A clear, concise title for your goal
@@ -91,6 +117,7 @@ export default function NewGoalPage() {
             name="description" 
             placeholder="What do you want to achieve?"
             rows={4}
+            disabled={isLoading}
           />
           <p className="text-sm text-muted-foreground">
             Add more details about your goal (optional)
@@ -99,24 +126,51 @@ export default function NewGoalPage() {
 
         <div className="space-y-2">
           <Label>Due Date *</Label>
-          <Input 
-            type="date" 
-            name="dueDate" 
-            required
-            min={format(new Date(), 'yyyy-MM-dd')}
-          />
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-full justify-start text-left font-normal",
+                  !date && "text-muted-foreground"
+                )}
+                disabled={isLoading}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {date ? format(date, "PPP") : "Pick a date"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={date}
+                onSelect={setDate}
+                disabled={(date) => date < new Date()}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
           <p className="text-sm text-muted-foreground">
             When do you want to achieve this by?
           </p>
         </div>
 
         <div className="flex justify-end space-x-4 pt-4">
-          <Button variant="outline" asChild type="button">
+          <Button variant="outline" asChild type="button" disabled={isLoading}>
             <Link href="/dashboard/goals">
               Cancel
             </Link>
           </Button>
-          <Button type="submit">Create Goal</Button>
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Creating...
+              </>
+            ) : (
+              'Create Goal'
+            )}
+          </Button>
         </div>
       </form>
     </div>
